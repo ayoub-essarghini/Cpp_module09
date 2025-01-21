@@ -31,7 +31,11 @@ int main(int argc, char* argv[]) {
     pmergeMe.mergeInsertionSortVector(vectorContainer);
     std::clock_t endVector = std::clock();
 
-
+    // Sort using std::deque
+    std::deque<int> dequeContainer(numbers.begin(), numbers.end());
+    std::clock_t startDeque = std::clock();
+    pmergeMe.mergeInsertionSortDeque(dequeContainer);
+    std::clock_t endDeque = std::clock();
 
     // Display sorted sequence
     std::cout << "After: ";
@@ -42,10 +46,12 @@ int main(int argc, char* argv[]) {
 
     // Measure and display time
     double vectorTime = static_cast<double>(endVector - startVector) / CLOCKS_PER_SEC * 1e6; // in microseconds
+    double dequeTime = static_cast<double>(endDeque - startDeque) / CLOCKS_PER_SEC * 1e6; // in microseconds
 
     std::cout << "Time to process a range of " << vectorContainer.size() 
               << " elements with std::vector: " << vectorTime << " us" << std::endl;
-
+    std::cout << "Time to process a range of " << dequeContainer.size() 
+              << " elements with std::deque: " << dequeTime << " us" << std::endl;
 
     return 0;
 }
