@@ -1,91 +1,112 @@
 #include "PmergeMe.hpp"
+#include <iostream>
+#include <ctime>
+#include <cstdlib>
+#include <string>
+#include <iomanip> // For std::fixed and std::setprecision
 
-PmergeMe::PmergeMe() {}
-
-PmergeMe::~PmergeMe() {}
-
-PmergeMe::PmergeMe(const PmergeMe &other)
-{
-    *this = other;
+template <typename Container>
+void insertionSort(Container &container) {
+    for (size_t i = 1; i < container.size(); ++i) {
+        int key = container[i];
+        size_t j = i;
+        while (j > 0 && container[j - 1] > key) {
+            container[j] = container[j - 1];
+            --j;
+        }
+        container[j] = key;
+    }
 }
 
-PmergeMe &PmergeMe::operator=(const PmergeMe &other)
-{
-    (void)other;
-    return *this;
-}
-// Function to validate input
-struct IsNotDigit
-{
-    bool operator()(char c) const
-    {
-        return !std::isdigit(c);
-    }
-};
+template <typename Container>
+void merge(Container &container, int left, int right) {
+    if (left >= right) return;
 
-bool PmergeMe::isValidInput(const std::string &str)
-{
-    return !str.empty() && std::find_if(str.begin(), str.end(), IsNotDigit()) == str.end();
-}
+    int mid = left + (right - left) / 2;
+    merge(container, left, mid);
+    merge(container, mid + 1, right);
 
-// Merge-Insertion Sort for std::vector
-void PmergeMe::mergeInsertionSortVector(std::vector<int> &arr)
-{
-    if (arr.size() <= 1)
-        return;
+    std::vector<int> temp;
+    int i = left, j = mid + 1;
 
-    // Pair and sort within pairs
-    std::vector<int> mainChain, pendings;
-    for (size_t i = 0; i < arr.size(); i += 2)
-    {
-        if (i + 1 < arr.size() && arr[i] > arr[i + 1])
-            std::swap(arr[i], arr[i + 1]);
-        mainChain.push_back(arr[i]);
-        if (i + 1 < arr.size())
-            pendings.push_back(arr[i + 1]);
+    while (i <= mid && j <= right) {
+        if (container[i] <= container[j]) {
+            temp.push_back(container[i]);
+            ++i;
+        } else {
+            temp.push_back(container[j]);
+            ++j;
+        }
     }
 
-    // Sort main chain
-    std::sort(mainChain.begin(), mainChain.end());
-
-    // Insert pending elements
-    for (size_t i = 0; i < pendings.size(); ++i)
-    {
-        int num = pendings[i];
-        std::vector<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), num);
-        mainChain.insert(pos, num);
+    while (i <= mid) {
+        temp.push_back(container[i]);
+        ++i;
     }
 
-    arr = mainChain;
+    while (j <= right) {
+        temp.push_back(container[j]);
+        ++j;
+    }
+
+    for (int i = left; i <= right; ++i) {
+        container[i] = temp[i - left];
+    }
 }
 
-// Merge-Insertion Sort for std::deque
-void PmergeMe::mergeInsertionSortDeque(std::deque<int> &arr)
-{
-    if (arr.size() <= 1)
-        return;
+template <typename Container>
+void mergeInsertSort(Container &container, int left, int right) {
+    if (right - left <= 10) {
+        insertionSort(container);
+    } else {
+        merge(container, left, right);
+    }
+}
 
-    // Pair and sort within pairs
-    std::deque<int> mainChain, pendings;
-    for (size_t i = 0; i < arr.size(); i += 2)
-    {
-        if (i + 1 < arr.size() && arr[i] > arr[i + 1])
-            std::swap(arr[i], arr[i + 1]);
-        mainChain.push_back(arr[i]);
-        if (i + 1 < arr.size())
-            pendings.push_back(arr[i + 1]);
+template <typename Container>
+void displayContainer(const Container &container) {
+    for (size_t i = 0; i < container.size(); ++i) {
+        std::cout << container[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+void pmergeMe(int argc, char *argv[]) {
+    std::vector<int> vec;
+    std::deque<int> deq;
+
+    for (int i = 1; i < argc; ++i) {
+        try {
+            int num = std::atoi(argv[i]);
+            vec.push_back(num);
+            deq.push_back(num);
+        } catch (const std::invalid_argument &e) {
+            std::cerr << "Error: invalid argument '" << argv[i] << "'" << std::endl;
+            return;
+        }
     }
 
-    // Sort main chain
-    std::sort(mainChain.begin(), mainChain.end());
+    std::cout << "Before: ";
+    displayContainer(vec);
 
-    // Insert pending elements
-    for (size_t i = 0; i < pendings.size(); ++i)
-    {
-        int num = pendings[i];
-        std::deque<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), num);
-        mainChain.insert(pos, num);
-    }
+    // Timing with clock() for std::vector
+    clock_t start = clock();
+    mergeInsertSort(vec, 0, vec.size() - 1);
+    clock_t end = clock();
+    double durationVec = double(end - start) / CLOCKS_PER_SEC;
 
-    arr = mainChain;
+    std::cout << "After: ";
+    displayContainer(vec);
+    std::cout << std::fixed << std::setprecision(6); // Set precision to 6 decimal places
+    std::cout << "Time to process with std::vector: " << durationVec << " s" << std::endl;
+
+    // Timing with clock() for std::deque
+    start = clock();
+    mergeInsertSort(deq, 0, deq.size() - 1);
+    end = clock();
+    double durationDeq = double(end - start) / CLOCKS_PER_SEC;
+
+    std::cout << "After: ";
+    displayContainer(deq);
+    std::cout << "Time to process with std::deque: " << durationDeq << " s" << std::endl;
 }
