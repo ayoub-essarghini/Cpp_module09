@@ -4,17 +4,14 @@
 #include <vector>
 #include <deque>
 
-template <typename Container>
-void insertionSort(Container &container);
-
-template <typename Container>
-void merge(Container &container, int left, int right);
-
-template <typename Container>
-void mergeInsertSort(Container &container, int left, int right);
-
-template <typename Container>
-void displayContainer(const Container &container);
+void insertionSortVec(std::vector<int> &container);
+void insertionSortDeq(std::deque<int> &container);
+void mergeVec(std::vector<int> &container, int left, int right);
+void mergeDeq(std::deque<int> &container, int left, int right);
+void mergeInsertSortVec(std::vector<int> &container, int left, int right);
+void mergeInsertSortDeq(std::deque<int> &container, int left, int right);
+void displayContainerVec(const std::vector<int> &container);
+void displayContainerDeq(const std::deque<int> &container);
 
 void pmergeMe(int argc, char *argv[]);
 
